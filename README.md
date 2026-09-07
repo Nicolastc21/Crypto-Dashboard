@@ -4,9 +4,14 @@ A sleek, highly resilient, and real-time cryptocurrency tracking dashboard built
 
 This project goes beyond standard API fetching by implementing a **triple-fallback architecture** and **live WebSockets** to ensure market data and charts always load, completely eliminating the common issue of public API rate-limit crashes.
 
-![Crypto Dashboard Screenshot](<img width="1897" height="842" alt="image" src="https://github.com/user-attachments/assets/3c328c1e-1101-4a37-91cc-c931d358a789" />) 
-![The Detail & Chart Modal](<img width="785" height="762" alt="image" src="https://github.com/user-attachments/assets/8fc2e0ee-8999-4295-a646-f107216a9bb3" />).
-![The Portfolio Tracker](<img width="1151" height="856" alt="image" src="https://github.com/user-attachments/assets/c389df4a-872e-41b1-b2b2-4ab37cd7217a" />)
+### Dashboard Overview
+![Crypto Dashboard Screenshot](https://github.com/user-attachments/assets/3c328c1e-1101-4a37-91cc-c931d358a789) 
+
+### Interactive Charts & Alerts
+![The Detail & Chart Modal](https://github.com/user-attachments/assets/8fc2e0ee-8999-4295-a646-f107216a9bb3)
+
+### Portfolio Tracking
+![The Portfolio Tracker](https://github.com/user-attachments/assets/c389df4a-872e-41b1-b2b2-4ab37cd7217a)
 
 ## ✨ Key Features
 
