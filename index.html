@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crypto Dashboard — Live Markets & Portfolio</title>
+  <meta name="theme-color" content="#0b0f19">
+  <link rel="stylesheet" href="style.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <base target="_blank">
+</head>
+<body>
+
+  <div class="toast-container" id="toast-container"></div>
+
+  <div class="ticker-bar" id="ticker-bar">
+    <div class="ticker-content">
+      <span class="ticker-item" id="ticker-mc">Market Cap: —</span>
+      <span class="ticker-dot">•</span>
+      <span class="ticker-item" id="ticker-vol">24h Vol: —</span>
+      <span class="ticker-dot">•</span>
+      <span class="ticker-item" id="ticker-btc">BTC Dominance: —</span>
+      <span class="ticker-dot">•</span>
+      <span class="ticker-item" id="ticker-fng">Fear & Greed: —</span>
+    </div>
+  </div>
+
+  <div class="container" id="app">
+    <header class="header">
+      <div class="header-titles">
+        <h1>📊 Crypto Dashboard</h1>
+        <p>Live market prices, portfolio tracking & analytics</p>
+      </div>
+      <div class="controls-row">
+        <button class="btn btn-icon" id="btn-theme" title="Toggle theme">🌙</button>
+        <div class="currency-toggle" id="currency-toggle">
+          <button class="curr-btn active" data-curr="usd">USD</button>
+          <button class="curr-btn" data-curr="eur">EUR</button>
+          <button class="curr-btn" data-curr="ron">RON</button>
+        </div>
+        <button id="btn-refresh" class="btn btn-secondary btn-icon" title="Refresh data">🔄</button>
+      </div>
+    </header>
+
+    <div class="fng-card card" id="fng-card" style="display:none;">
+      <div class="fng-header">
+        <span class="section-badge">Market Sentiment</span>
+        <span class="fng-value" id="fng-value">—</span>
+      </div>
+      <div class="fng-track">
+        <div class="fng-fill" id="fng-fill"></div>
+        <div class="fng-labels">
+          <span>Extreme Fear</span>
+          <span>Fear</span>
+          <span>Neutral</span>
+          <span>Greed</span>
+          <span>Extreme Greed</span>
+        </div>
+      </div>
+    </div>
+
+    <section class="card portfolio-card">
+      <div class="portfolio-header">
+        <div>
+          <span class="section-badge">My Portfolio</span>
+          <h2 class="portfolio-value" id="portfolio-total">$0.00</h2>
+          <div class="portfolio-sub" id="portfolio-sub">0 assets · No price data</div>
+        </div>
+        <div class="portfolio-actions">
+          <button class="btn btn-secondary" id="btn-history">📜 History</button>
+          <button class="btn btn-accent" id="btn-open-modal">+ Add</button>
+        </div>
+      </div>
+
+      <div class="allocation-bar" id="allocation-bar" style="display:none;"></div>
+
+      <div class="portfolio-chart-wrap" id="portfolio-chart-wrap" style="display:none;">
+        <canvas id="portfolio-chart"></canvas>
+      </div>
+
+      <div class="portfolio-holdings" id="portfolio-holdings">
+        <p class="empty-hint">No assets added yet. Click "+ Add" to track your crypto!</p>
+      </div>
+    </section>
+
+    <section class="card converter-card">
+      <div class="converter-header">
+        <span class="section-badge">Quick Convert</span>
+      </div>
+      <div class="converter-body">
+        <div class="conv-group">
+          <input type="number" id="conv-amount" value="1" min="0" step="any">
+          <select id="conv-from"></select>
+        </div>
+        <span class="conv-eq">=</span>
+        <div class="conv-result" id="conv-result">—</div>
+        <select id="conv-to">
+          <option value="usd">USD ($)</option>
+          <option value="eur">EUR (€)</option>
+          <option value="ron">RON (lei)</option>
+        </select>
+      </div>
+    </section>
+
+    <section class="market-section">
+      <div class="market-tabs">
+        <button class="tab-btn active" data-tab="all">All Coins</button>
+        <button class="tab-btn" data-tab="watchlist">⭐ Watchlist</button>
+        <button class="tab-btn" data-tab="portfolio">💼 Portfolio</button>
+        <button class="tab-btn" data-tab="compare" id="tab-compare">📈 Compare</button>
+      </div>
+
+      <div class="search-bar-row">
+        <input type="text" id="crypto-search" class="search-input" placeholder="Search by name or symbol (e.g. BTC, Solana)..." autocomplete="off">
+        <div class="meta-row">
+          <span class="auto-refresh-badge" id="refresh-badge" title="Auto-refresh timer">⏱ 60s</span>
+          <span class="last-updated" id="last-updated">Updated just now</span>
+        </div>
+      </div>
+
+      <div class="table-container card">
+        <table class="crypto-table">
+          <thead>
+            <tr>
+              <th class="sortable" data-sort="market_cap_rank"># <span class="sort-icon">↓</span></th>
+              <th>Asset</th>
+              <th class="sortable" data-sort="current_price">Price <span class="sort-icon">↕</span></th>
+              <th class="sortable" data-sort="price_change_percentage_24h">24h <span class="sort-icon">↕</span></th>
+              <th class="hide-mobile sortable" data-sort="total_volume">Volume <span class="sort-icon">↕</span></th>
+              <th class="hide-mobile sortable" data-sort="market_cap">Mkt Cap <span class="sort-icon">↕</span></th>
+              <th class="hide-mobile">7d Trend</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="crypto-table-body">
+            <tr><td colspan="8" class="status-cell"><div class="spinner"></div>Loading market data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="load-more-row" id="load-more-row" style="display:none;">
+        <button class="btn btn-secondary" id="btn-load-more">Load More</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="modal-overlay" id="modal-detail">
+    <div class="modal-card modal-large">
+      <div class="modal-header">
+        <div class="modal-coin-info">
+          <img id="detail-img" src="" alt="">
+          <div>
+            <h3 id="detail-name">Coin</h3>
+            <span id="detail-symbol">SYM</span>
+          </div>
+        </div>
+        <button class="modal-close" data-close="modal-detail">×</button>
+      </div>
+      <div class="detail-price-row">
+        <span class="detail-price" id="detail-price">—</span>
+        <span class="detail-change" id="detail-change">—</span>
+        <button class="btn btn-secondary" id="btn-set-alert" style="margin-left: auto;">🔔 Set Alert</button>
+      </div>
+      
+      <div class="detail-chart-wrap" id="detail-chart-container" style="width: 100%; height: 260px;">
+        <canvas id="detail-chart"></canvas>
+      </div>
+      
+      <div class="detail-range-btns">
+        <button class="range-btn active" data-range="7">7D</button>
+        <button class="range-btn" data-range="30">30D</button>
+        <button class="range-btn" data-range="90">90D</button>
+        <button class="range-btn" data-range="365">1Y</button>
+      </div>
+      <div class="detail-stats" id="detail-stats"></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal-alert">
+    <div class="modal-card">
+      <h3>🔔 Set Price Alert</h3>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">Get a browser notification when your target is hit.</p>
+      <div class="form-group">
+        <label>Target Price ($)</label>
+        <input type="number" id="alert-price" step="any" placeholder="e.g. 50000">
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" data-close="modal-alert">Cancel</button>
+        <button class="btn btn-accent" id="btn-save-alert">Save Alert</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal-asset">
+    <div class="modal-card">
+      <h3>Add Transaction</h3>
+      <form id="portfolio-form">
+        <div class="form-group">
+          <label for="coin-select">Select Coin</label>
+          <select id="coin-select" required>
+            <option value="" disabled selected>Choose a coin...</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="tx-type">Type</label>
+            <select id="tx-type" required>
+              <option value="buy">Buy</option>
+              <option value="sell">Sell</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="coin-amount">Amount</label>
+            <input type="number" id="coin-amount" step="any" min="0.000001" placeholder="0.25" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="coin-price">Price per Coin <span class="optional">(optional, defaults to current)</span></label>
+            <input type="number" id="coin-price" step="any" min="0" placeholder="Current market price">
+          </div>
+          <div class="form-group">
+            <label for="tx-date">Date</label>
+            <input type="date" id="tx-date" required>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" data-close="modal-asset">Cancel</button>
+          <button type="submit" class="btn btn-accent">Save Transaction</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal-history">
+    <div class="modal-card modal-large">
+      <div class="modal-header">
+        <h3>📜 Transaction History</h3>
+        <button class="modal-close" data-close="modal-history">×</button>
+      </div>
+      <div class="history-list" id="history-list">
+        <p class="empty-hint">No transactions yet.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal-compare">
+    <div class="modal-card modal-large">
+      <div class="modal-header">
+        <h3>📈 Coin Comparison</h3>
+        <button class="modal-close" data-close="modal-compare">×</button>
+      </div>
+      <div class="compare-picker">
+        <p class="compare-hint">Select up to 3 coins to compare normalized performance:</p>
+        <div class="compare-chips" id="compare-chips"></div>
+      </div>
+      <div class="detail-chart-wrap" style="height: 260px;">
+        <canvas id="compare-chart"></canvas>
+      </div>
+      <div class="detail-range-btns">
+        <button class="range-btn active" data-compare-range="7">7D</button>
+        <button class="range-btn" data-compare-range="30">30D</button>
+        <button class="range-btn" data-compare-range="90">90D</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
